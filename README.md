@@ -1,4 +1,4 @@
-## Python module that handles file/directory uploading to AWS S3
+# Python module that handles file/directory uploading to AWS S3
 
-# Installation
+## Installation
 `pip install -r requirements.txt`
