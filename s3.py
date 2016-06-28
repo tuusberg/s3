@@ -1,3 +1,5 @@
+__author__ = "Matthew Tuusberg"
+
 import sys
 import os
 import threading
@@ -37,6 +39,8 @@ class S3(object):
         self.verbose = verbose
 
     def upload_object(self, bucket, body, s3_key):
+        if not bucket:
+            raise ValueError('bucket')
         if not s3_key:
             raise ValueError('s3_key')
 
@@ -48,6 +52,8 @@ class S3(object):
         return bucket.put_object(Body=body, Key=s3_key)
 
     def upload_file(self, bucket, filename, s3_key=None):
+        if not bucket:
+            raise ValueError('bucket')
         if not filename:
             raise ValueError('filename')
 
@@ -63,6 +69,8 @@ class S3(object):
         return bucket.upload_file(filename, s3_key, Callback=callback)
 
     def upload_directory(self, bucket, path, s3_key=None, keep_structure=True):
+        if not bucket:
+            raise ValueError('bucket')
         if not path:
             raise ValueError('path')
 
@@ -92,10 +100,30 @@ class S3(object):
                 callback = ProgressPercentage(filename) if self.verbose else None
                 bucket.upload_file(filename, key, Callback=callback)
 
-    def _bucket(self, bucketname):
-        if not bucketname:
-            raise ValueError('bucketname')
+    def download_file(self, bucket, s3_key, outfile):
+        if not bucket:
+            raise ValueError('bucket')
+        if not s3_key:
+            raise ValueError('s3_key')
+        if not outfile:
+            raise ValueError('outfile')
 
+        bucket, exists = self._bucket(bucket)
+
+        if not exists:
+            return False
+
+        try:
+            bucket.download_file(s3_key, outfile)
+            return True
+        except Exception as e:
+            if self.should_raise:
+                raise e
+
+            print e
+            return False
+
+    def _bucket(self, bucketname):
         bucket = self.resource.Bucket(bucketname)
         exists = True
         try:
